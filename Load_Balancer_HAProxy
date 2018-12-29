@@ -71,8 +71,8 @@ backend webservers
  # balance with roundrobin
     balance            roundrobin
       # define backend servers
-    server             client1 192.168.39.121:80 client1 check
-    server             client2 192.168.39.122:80 client2 check
+    server             client1 192.168.39.121:80 check
+    server             client2 192.168.39.122:80 check
 
 #Reload the haproxy server
 systemctl start haproxy 
