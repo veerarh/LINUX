@@ -267,6 +267,6 @@ Now access the subdirectory also using load balancer
 goto browser and type
    server.local.com/client1
    (or)
-   192.168.39.130
+   192.168.39.130/client1
 
 
