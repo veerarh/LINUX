@@ -224,36 +224,27 @@ frontend htt-in
     	  option             forwardfor
 
 backend client1
-          #mode http
           redirect scheme https if !{ ssl_fc }
           balance                 roundrobin
   
           http-request set-header Orig-Path /client1/
           http-request set-header X-Script-Path /client1/
-          #http-request set-header Host local.com
           reqirep ^([^\ :]*)\ ^/(.*)  \1\ /client1/\2
           http-response replace-value Location ^http://(.*)$ https://\1
-          #redirect scheme http if { ssl_fc }
-          #redirect schema https if !{ ssl_fc }
           server              client1 client1.local.com:80 check
   
   
   backend client2
-          #mode http  
           redirect scheme https if !{ ssl_fc }
           balance                 roundrobin
   
           http-request set-header Orig-Path /client2/
           http-request set-header X-Script-Path /client2/
- 	  #http-request set-header Host local.com
-          reqirep ^([^\ :]*)\ ^/(.*)  \1\ /client2/\2
+ 	        reqirep ^([^\ :]*)\ ^/(.*)  \1\ /client2/\2
           http-response replace-value Location ^http://(.*)$ https://\1
-          #redirect scheme http if { ssl_fc }
-          #redirect schema https if !{ ssl_fc }
           server              client2 client2.local.com:80 check
   
   backend webservers
-          #  use backend webservers if client1
           redirect scheme https if !{ ssl_fc }
           # balance with roundrobin
           balance            roundrobin
