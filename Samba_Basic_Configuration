@@ -1,0 +1,93 @@
+SAMBA CONFIGURATION
+What is Samba?
+    • Samba is a suite of Unix applications that speak the Server Message Block (SMB) protocol.
+    • Windows and Unix operating system use SMB to perform client-server networking for file and printer sharing and associated operations.
+Creating a Basic smb.conf File
+The following is a minimal configuration for a Samba standalone server:
+[global]
+        map to guest = Bad User
+        log file = /var/log/samba/%m
+        log level = 1
+[guest]
+        # This share allows anonymous (guest) access
+        # without authentication!
+        path = /srv/samba/guest/
+        read only = no
+        guest ok = yes
+[demo]
+        # This share requires authentication to access
+        path = /srv/samba/demo/
+        read only = no
+        guest ok = no
+
+The default workgroup name 'WORKGROUP' will be used.
+
+If you are not planning to enable anonymous (guest) access to shares, remove the[map to guest]parameter or set it to[Never](default).
+
+Creating a Local User Account
+Create a demoUser account on the local system:
+useradd -M -s /sbin/nologin demoUser
+Omit the -M parameter if the user requires a home directory on this host.
+to enable the demoUser account on the local system:
+passwd demoUser
+Enter new UNIX password: Passw0rd
+Retype new UNIX password: Passw0rd
+passwd: password updated successfully
+Setting a local password is required to enable the account.
+
+Add the demoUser account to the Samba database:
+mbpasswd -a demoUser
+New SMB password: Passw0rd
+Retype new SMB password: Passw0rd
+Added user demoUser.
+The password assigned in these steps is the one used by the user to log in to the domain.
+
+To enable the Samba account:
+# smbpasswd -e demoUser
+Enabled user demoUser.
+
+Local Group Management
+To create a demoGroup group:
+# groupadd demoGroup
+To add the demoUser account to the group:
+# usermod -aG demoGroup demoUser
+Creating the Shared Directories
+To create the shares directories:
+# mkdir -p /srv/samba/guest/
+# mkdir -p /srv/samba/demo/
+
+Setting ACLs on the Shared Directories
+Set the following POSIX permissions:
+# chgrp -R demoGroup /srv/samba/guest/
+# chgrp -R demoGroup /srv/samba/demo/
+
+# chmod 2775 /srv/samba/guest/
+# chmod 2770 /srv/samba/demo/
+This configures write access to members of the demoGroup group in both directories. Other users have read access in the /srv/samba/guest/ and no access in the /srv/samba/demo/ directory. The SGID bit - represented by the first bit (2) in the mode set on the directories
+
+Starting Samba
+Start the smbd daemon:
+# smbd
+
+Testing the Share Access
+
+[root@samba home]# smbclient -U demo //192.168.39.145/admin
+Enter WORKGROUP\demo's password: 
+Try "help" to get a list of possible commands.
+smb: \> ls
+  .                                   D        0  Thu Jan 31 00:18:45 2019
+  ..                                  D        0  Wed Jan 30 05:16:03 2019
+
+		28289540 blocks of size 1024. 26873072 blocks available
+smb: \> 
+Access the demo share as guest. The access is denied:
+
+[root@samba home]# smbclient -U test1 //192.168.39.145/admin
+Enter WORKGROUP\test1's password: 
+Try "help" to get a list of possible commands.
+smb: \> ls
+NT_STATUS_ACCESS_DENIED listing \*
+smb: \> quit
+[root@samba home]# 
+
+
